@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">Missed Call Responder</string>
+
+    <string name="set_sms">set sms</string>
+    <string name="ok">Okay</string>
+    <string name="cancel">Cancel</string>
+    <string name="expansionpanel">Expansionpanel</string>
+    <string name="service_active_state">Service Activation</string>
+    <string name="ServiceDesc">Switch ON to start the service which responds to missed call via SMS to caller, or Switch OFF to stop the service.</string>
+    <string name="enter_message_here">Enter message here....</string>
+
+    <string name="toast">Message is empty, enter some value</string>
+    <string name="item1">I was little busy, please call me after some time</string>
+    <string name="item2">I am at class, please call me at evening</string>
+    <string name="item3">I am at office, i will call you when am free</string>
+    <string name="item4">I was at travelling, i will call you later</string>
+</resources>
