@@ -111,7 +111,7 @@ public class MainActivity extends Activity {
     public void changesms(View view) {
 
         String msg = editText.getText().toString();
-        if(!msg.equals(""))
+        if(!msg.equals("") && !list.contains(msg))
         {
             savemsg(msg);
             addtolist(msg);
@@ -203,15 +203,20 @@ public class MainActivity extends Activity {
 
     private void switchchanges() {
 
+        switchdata(true);
         aSwitch1.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-
-                SharedPreferences.Editor editor = sharedPref.edit();
-                editor.putBoolean("servicestate", isChecked);
-                editor.apply();
+                switchdata(isChecked);
             }
         });
 
+    }
+
+    private void switchdata(boolean bool)
+    {
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putBoolean("servicestate", bool);
+        editor.apply();
     }
 
     public void clear(View view) {

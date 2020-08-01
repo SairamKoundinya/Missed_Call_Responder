@@ -119,38 +119,47 @@ public class PhoneCallReceiver extends BroadcastReceiver {
         PendingIntent deliveredPI = PendingIntent.getBroadcast(context, 0, new Intent(DELIVERED), 0);
 
         BroadcastReceiver sendSMS = new BroadcastReceiver() {
+            boolean notifi = false;
             @Override
             public void onReceive(Context arg0, Intent arg1) {
-                switch (getResultCode()) {
-                    case Activity.RESULT_OK:
-                        //sendNotification(context, "SMS Sent Success!", "Your busy message was successfully sent to "+phoneNumber);
-                        break;
-                    case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
-                        sendNotification(context, "SMS Sent Failed!", "Generic failure");
-                        break;
-                    case SmsManager.RESULT_ERROR_NO_SERVICE:
-                        sendNotification(context, "SMS Sent Failed!", "No service");
-                        break;
-                    case SmsManager.RESULT_ERROR_NULL_PDU:
-                        sendNotification(context, "SMS Sent Failed!", "Null PDU");
-                        break;
-                    case SmsManager.RESULT_ERROR_RADIO_OFF:
-                        sendNotification(context, "SMS Sent Failed!", "Radio Off");
-                        break;
+                if(!notifi) {
+                    notifi = true;
+                    switch (getResultCode()) {
+                        case Activity.RESULT_OK:
+                            //sendNotification(context, "SMS Sent Success!", "Your busy message was successfully sent to "+phoneNumber);
+                            break;
+                        case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
+                            sendNotification(context, "SMS Sent Failed!", "Insufficient balance, Generic failure");
+                            break;
+                        case SmsManager.RESULT_ERROR_NO_SERVICE:
+                            sendNotification(context, "SMS Sent Failed!", "SMS sent fail, No service");
+                            break;
+                        case SmsManager.RESULT_ERROR_NULL_PDU:
+                            sendNotification(context, "SMS Sent Failed!", "Null PDU");
+                            break;
+                        case SmsManager.RESULT_ERROR_RADIO_OFF:
+                            sendNotification(context, "SMS Sent Failed!", "Radio Off");
+                            break;
+                    }
                 }
             }
         };
 
+
         BroadcastReceiver deliverSMS = new BroadcastReceiver() {
+            boolean notifi = false;
             @Override
             public void onReceive(Context arg0, Intent arg1) {
-                switch (getResultCode()) {
-                    case Activity.RESULT_OK:
-                        sendNotification(context, "SMS Sent Success!", "Your busy message was successfully sent to "+phoneNumber);
-                        break;
-                    case Activity.RESULT_CANCELED:
-                        sendNotification(context, "SMS not delivered", "Problem at receiver side to deliver message");
-                        break;
+                if(!notifi) {
+                    notifi = true;
+                    switch (getResultCode()) {
+                        case Activity.RESULT_OK:
+                            sendNotification(context, "SMS Sent Success!", "Your busy message was successfully sent to " + phoneNumber);
+                            break;
+                        case Activity.RESULT_CANCELED:
+                            sendNotification(context, "SMS not delivered", "Problem at receiver side to deliver message");
+                            break;
+                    }
                 }
             }
         };
@@ -158,6 +167,7 @@ public class PhoneCallReceiver extends BroadcastReceiver {
 
         context.getApplicationContext().registerReceiver(deliverSMS, new IntentFilter(DELIVERED));
 
+        Log.i("check", "SMS");
         SmsManager sms = SmsManager.getDefault();
         sms.sendTextMessage(phoneNumber, null, message, sentPI, deliveredPI);
     }
@@ -165,6 +175,8 @@ public class PhoneCallReceiver extends BroadcastReceiver {
     class PhoneStateChangeListener extends PhoneStateListener {
         private  boolean wasRinging = false;
         private  boolean wasReceived = false;
+        private  String currentnumber = null;
+        private  String currentnumber2 = null;
 
         @Override
         public void onCallStateChanged(int state, String incomingNumber) {
@@ -175,17 +187,29 @@ public class PhoneCallReceiver extends BroadcastReceiver {
                 case TelephonyManager.CALL_STATE_RINGING:
                     Log.i(LOG_TAG, "RINGING");
                     wasRinging = true;
+                    if(!(incomingNumber.equals(currentnumber)))
+                    {
+                       // wasReceived = false;
+                       // wasRinging = false;
+                        currentnumber = incomingNumber;
+                      //  Log.i(LOG_TAG, "Method "+wasRinging+" "+wasReceived);
+                        handler.postDelayed(runnable, 30000);
+                    }
                     break;
                 case TelephonyManager.CALL_STATE_OFFHOOK:
                     Log.i(LOG_TAG, "OFFHOOK");
                     wasReceived = true;
+                    handler.removeCallbacks(runnable);
                     break;
                 case TelephonyManager.CALL_STATE_IDLE:
                     Log.i(LOG_TAG, "IDLE "+wasRinging+" "+wasReceived);
-                    if(wasRinging && !wasReceived)
+                    if(wasRinging && !wasReceived && !(incomingNumber.equals(currentnumber2)))
                     {
                         wasReceived = false;
                         wasRinging = false;
+                        currentnumber2 = incomingNumber;
+                        handler.removeCallbacks(runnable);
+                        Log.i(LOG_TAG, "Method "+wasRinging+" "+wasReceived);
                         handler.postDelayed(runnable, 1000);
                     }
                     break;
